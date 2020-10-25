@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html style="background: rgb(248,249,252);">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/styles.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.2.0/aos.css">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}">
+</head>
+
+<body id="page-top" style="background: rgb(248,249,252);">
+    <div id="wrapper">
+        <div class="d-flex flex-column" id="content-wrapper">
+            <div id="content">
+                <nav class="navbar navbar-dark navbar-expand-md" id="app-navbar" style="margin-bottom: 20px;">
+                    <div class="container-fluid"><a class="navbar-brand" href="{{ url_for('index') }}"><i class="icon ion-ios-infinite" id="brand-logo"></i></a><button data-toggle="collapse" class="navbar-toggler" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+                        <div
+                            class="collapse navbar-collapse" id="navcol-1">
+                            <ul class="nav navbar-nav ml-auto">
+                                <li class="nav-item"><a class="nav-link active" href="{{ url_for('index') }}">Home</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('cards') }}">Cards</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('lootbox') }}">Lootbox</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+                                {% if adminResult %}
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.index') }}">Admin</a></li>
+                                {% endif %}
+                                {% if check %}
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('profile') }}">Profile</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                                {% else %}
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+                                {% endif %}
+                            </ul>
+                    </div>
+            </div>
+            </nav>
+            <div class="container-fluid">
+                <div class="row d-flex d-xl-flex align-items-center align-items-xl-center" style="margin: 0px;">
+                    <div class="col">
+                        <div class="card" style="margin-top: 10px;margin-bottom: 10px;">
+                            <div class="card-body text-center">
+                                <h4 class="text-center card-title" style="font-size: 30px;color: rgb(0,0,0);">{{ players[1].name }}</h4>
+                                <h4 class="text-center card-title" style="font-size: 30px;">2nd Place</h4>
+                                <h6 class="text-center text-muted card-subtitle mb-2">{{ players[1].stats.points }} Points</h6><img class="leaderboard" src="{{ players[1].avatar_url }}"></div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card aos-init aos-animate" data-aos="fade" data-aos-duration="600" data-aos-delay="100" data-aos-once="true" style="margin-top: 10px;margin-bottom: 10px;">
+                            <div class="card-body text-center">
+                                <h4 class="text-center card-title" style="font-size: 40px;color: rgb(0,0,0);">{{ players[0].name }}</h4>
+                                <h4 class="text-center card-title" style="font-size: 40px;">1st Place</h4>
+                                <h6 class="text-center text-muted card-subtitle mb-2">{{ players[0].stats.points }} Points</h6><img class="leaderboard1" src="{{ players[0].avatar_url }}"></div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card" style="margin-top: 10px;margin-bottom: 10px;">
+                            <div class="card-body text-center">
+                                <h4 class="text-center card-title" style="color: rgb(0,0,0);font-size: 30px;">{{ players[2].name }}</h4>
+                                <h4 class="text-center card-title" style="font-size: 30px;">3rd Place</h4>
+                                <h6 class="text-center text-muted card-subtitle mb-2">{{ players[2].stats.points }} Points</h6><img class="leaderboard" src="{{ players[2].avatar_url }}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid" style="padding-top:30px;padding-bottom:30px;">
+                <h3 class="text-dark mb-4">Rarities</h3>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
+                                <table class="table my-0" id="dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Rarity</th>
+                                            <th>Number of Cards With Rarity</th>
+                                            <th style="width: 301px;">Cards Collected With Rarity</th>
+                                            <th style="width: 203px;">Chance of Collecting</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Joesus Christ</td>
+                                            <td>{{ card_rarities[0][0] }}</td>
+                                            <td style="width: 131px;">{{ card_rarities[0][1] }}</td>
+                                            <td>0.01%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Mythic</td>
+                                            <td>{{ card_rarities[1][0] }}</td>
+                                            <td>{{ card_rarities[1][1] }}</td>
+                                            <td>4.99%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Legendary</td>
+                                            <td>{{ card_rarities[2][0] }}</td>
+                                            <td>{{ card_rarities[2][1] }}</td>
+                                            <td>10%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rare</td>
+                                            <td>{{ card_rarities[3][0] }}</td>
+                                            <td>{{ card_rarities[3][1] }}</td>
+                                            <td>15%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Special</td>
+                                            <td>{{ card_rarities[4][0] }}</td>
+                                            <td>{{ card_rarities[4][1] }}</td>
+                                            <td>30%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fundamental</td>
+                                            <td>{{ card_rarities[5][0] }}</td>
+                                            <td>{{ card_rarities[5][1] }}</td>
+                                            <td>40%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.2.0/aos.js"></script>
+    <script src="{{ url_for('static', filename='assets/js/script.min.js') }}"></script>
+</body>
+
+</html>

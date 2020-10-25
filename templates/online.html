@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Trade</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/styles.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/owl.carousel.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/owl.theme.default.min.css') }}">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}">
+</head>
+
+<body id="page-top">
+    <script>
+        var socket = io('https://joe.cards');
+        var trade_socket = io('https://joe.cards/tradesocket')
+        socket.on('connect', () => socket.send("New connection."));
+        function requestTrade(discordTag) {
+            trade_socket.emit('wtt', {'discordTag':discordTag});
+            document.getElementById('waitingWindow').style.display = '';
+            document.getElementById('userWindow').style.display = 'none';
+        }
+        trade_socket.on('tradeConnected', (name) => {
+            document.getElementById('tradeName').textContent = name;
+            document.getElementById('waitingWindow').style.display = 'none';
+            document.getElementById('tradeWindow').style.display = '';
+        })
+        socket.on('tradeAbandon', () => {
+            document.getElementById('tradeWindow').style.display = 'none';
+            document.getElementById('abandonWindow').style.display = '';
+        })
+        socket.on('userUpdate', (data) => {
+            [...document.getElementsByClassName('playerFilter')].forEach(e=>e.parentNode.removeChild(e));
+            data.forEach(user => {
+                if (user.discordTag != '{{ discordTag }}'){
+                    var d = document.createElement('div')
+                    d.innerHTML = `<div class="playerFilter">
+                        <div class="col d-xl-flex justify-content-xl-center align-items-xl-center" username="${user.discordId}" style="padding: 0px;margin-right: 10px;margin-left: 10px;margin-top: 10px;margin-bottom: 10px;">
+                            <div class="card" style="margin-bottom: 10px;margin-top: 10px;margin-right:10px;margin-left:10px;">
+                                <div class="card-body" style="width: 330px;">
+                                    <div class="row" style="margin: 0px;">
+                                        <div class="col" style="width: 150px;"><img class="mini-profile-pic" src="${user.avatar_url}" /></div>
+                                        <div class="col text-center" style="width: 170px;">
+                                            <h5 style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;max-width: 140px;">${user.discordTag}</h5>
+                                            <div class="text-center" style="margin-top: 30px;"><button class="btn btn-primary" type="button" onclick="requestTrade('${user.discordTag}')">Trade</button></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                    document.getElementById('playerList').appendChild(d.firstChild);
+                }   
+            });
+        })
+        socket.on('tradeAbandon', () => {
+            if (document.getElementById('completedWindow').style.display == '' || document.getElementById('processingWindow').style.display == ''){
+                document.getElementById('tradeWindow').style.display = 'none';
+                document.getElementById('abandonWindow').style.display = '';
+            }
+        })
+        trade_socket.on('offerAdd', (payload) => {
+            var d = document.createElement('div')
+            d.innerHTML = `<div class="${payload.title} col d-xl-flex justify-content-xl-center align-items-xl-center" style="max-width: 230px;padding: 0px;">
+                                    <div class="card noselect" style="width: 200px;margin-top: 10px;margin-bottom: 10px;">
+                                        <div class="card-body">
+                                            <h4 style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">${payload.title}</h4>
+                                            <h5 class="text-muted card-subtitle mb-2">${payload.rarity}</h5>
+                                        </div>
+                                    </div>
+                                </div>`;
+            document.getElementById('tradeOffer').appendChild(d.firstChild)
+        })
+        trade_socket.on('offerRemove', (payload) => {
+            document.getElementsByClassName(payload.title)[0].remove()
+        })
+        trade_socket.on('unlockedIn', () => {
+            document.getElementById('offerLockedIn').textContent = 'Not Locked In';
+            if (document.getElementById('offerLockedIn').textContent == 'Locked In' && document.getElementById('lockIn').textContent == 'Unlock'){
+                document.getElementById('acceptButton').disabled = false
+                document.getElementById('offerAccepted').style.display = '';
+                document.getElementById('lockIn').style.display = 'none';
+                document.getElementById('offerLockedIn').style.display = 'none';
+            } else {
+                document.getElementById('acceptButton').disabled = true
+                document.getElementById('offerAccepted').style.display = 'none';
+            }
+        })
+        trade_socket.on('lockedIn', () => {
+            document.getElementById('offerLockedIn').textContent = 'Locked In';
+            if (document.getElementById('offerLockedIn').textContent == 'Locked In' && document.getElementById('lockIn').textContent == 'Unlock'){
+                document.getElementById('acceptButton').disabled = false
+                document.getElementById('offerAccepted').style.display = '';
+                document.getElementById('lockIn').style.display = 'none';
+                document.getElementById('offerLockedIn').style.display = 'none';
+            } else {
+                document.getElementById('acceptButton').disabled = true
+                document.getElementById('offerAccepted').style.display = 'none';
+            }
+        })
+        trade_socket.on('accepted', () => {
+            document.getElementById('offerAccepted').textContent = "Accepted"
+            if (document.getElementById('acceptButton').textContent == "Accepted") {
+                document.getElementById('tradeWindow').style.display = 'none';
+                document.getElementById('processingWindow').style.display = '';
+            }
+        })
+        trade_socket.on('completed', () => {
+            document.getElementById('processingWindow').style.display = 'none';
+            document.getElementById('completedWindow').style.display = '';
+        })
+        function accept() {
+            trade_socket.emit('accept')
+            document.getElementById('acceptButton').disabled = true
+            document.getElementById('acceptButton').textContent = "Accepted"
+            if (document.getElementById('offerAccepted').textContent == "Accepted") {
+                document.getElementById('tradeWindow').style.display = 'none';
+                document.getElementById('processingWindow').style.display = '';
+                trade_socket.emit('process')
+            }
+        }
+        function lockIn() {
+            if (document.getElementById('lockIn').textContent == 'Lock In'){
+                trade_socket.emit('lockedIn')
+                document.getElementById('lockIn').textContent = 'Unlock'
+            } else {
+                trade_socket.emit('unlockedIn')
+                document.getElementById('lockIn').textContent = 'Lock In'
+            }
+            if (document.getElementById('offerLockedIn').textContent == 'Locked In' && document.getElementById('lockIn').textContent == 'Unlock'){
+                document.getElementById('acceptButton').disabled = false
+                document.getElementById('offerAccepted').style.display = '';
+                document.getElementById('lockIn').style.display = 'none';
+                document.getElementById('offerLockedIn').style.display = 'none';
+            } else {
+                document.getElementById('acceptButton').disabled = true
+                document.getElementById('offerAccepted').style.display = 'none';
+            }
+        }
+        function move(ele) {
+            if (document.getElementById('lockIn').textContent != 'Unlock'){
+                if (ele.parentNode.id == 'yourInventory'){
+                    ele.parentNode.removeChild(ele);
+                    document.getElementById('yourOffer').appendChild(ele);
+                    trade_socket.emit('add', {'title':ele.getElementsByClassName('title')[0].textContent, 'rarity':ele.getElementsByClassName('rarity')[0].textContent});
+                } else {
+                    ele.parentNode.removeChild(ele);
+                    document.getElementById('yourInventory').appendChild(ele);
+                    trade_socket.emit('remove', {'title':ele.getElementsByClassName('title')[0].textContent, 'rarity':ele.getElementsByClassName('rarity')[0].textContent});
+                }
+            }
+        }
+    </script>
+    
+    <script type="text/javascript" href="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="{{ url_for('static', filename='assets/js/jquery.min.js') }}"></script>
+    <div id="wrapper">
+        <div class="d-flex flex-column" id="content-wrapper">
+            <div id="content">
+                <nav class="navbar navbar-dark navbar-expand-md" id="app-navbar" style="margin-bottom: 20px;">
+                    <div class="container-fluid"><a class="navbar-brand" href="{{ url_for('index') }}"><i class="icon ion-ios-infinite" id="brand-logo"></i></a><button data-toggle="collapse" class="navbar-toggler" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+                        <div
+                            class="collapse navbar-collapse" id="navcol-1">
+                            <ul class="nav navbar-nav ml-auto">
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('cards') }}">Cards</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('lootbox') }}">Lootbox</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+                                {% if adminResult %}
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.index') }}">Admin</a></li>
+                                {% endif %}
+                                {% if check %}
+                                <li class="nav-item"><a class="nav-link active" href="{{ url_for('trade') }}">Trade</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('profile') }}">Profile</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                                {% else %}
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+                                {% endif %}
+                            </ul>
+                    </div>
+            </div>
+            </nav>
+            <div class="container-fluid" id="abandonWindow" style="display: none;">
+                <div class="d-xl-flex justify-content-xl-center align-items-xl-center" style="margin: 50px;">
+                    <h1>User has abandoned trade. Please refresh.</h1>
+                </div>
+            </div>
+            <div class="container-fluid" id="processingWindow" style="display: none;">
+                <div class="d-xl-flex justify-content-xl-center align-items-xl-center" style="margin-top: 50px;">
+                    <h1>Processing Trade...</h1>
+                </div>
+                <div class="d-xl-flex justify-content-xl-center align-items-xl-center" style="margin-top: 20px;margin-bottom:70px;"><span role="status" class="spinner-border spinner-border-sm" style="width: 100px;height: 100px;"></span></div>
+            </div>
+            <div class="container-fluid" id="completedWindow" style="display: none;">
+                <div class="d-xl-flex justify-content-xl-center align-items-xl-center" style="margin-top: 50px;">
+                    <h1>Trade Completed!</h1>
+                </div>
+                <div class="d-xl-flex justify-content-xl-center align-items-xl-center" style="margin-top: 20px;margin-bottom:70px;"><i class="fa fa-check" style="font-size: 100px;"></i></div>
+            </div>
+            <div class="container-fluid" id="waitingWindow" style="display: none;">
+                <div class="d-xl-flex justify-content-xl-center align-items-xl-center" style="margin-top: 50px;">
+                    <h1>Waiting For User...</h1>
+                </div>
+                <div class="d-xl-flex justify-content-xl-center align-items-xl-center" style="margin-top: 20px;margin-bottom:70px;"><span role="status" class="spinner-border spinner-border-sm" style="width: 100px;height: 100px;"></span></div>
+            </div>
+            <div class="container-fluid" id="tradeWindow" style="display:none;">
+                <div class="row" style="margin: 0px;">
+                    <div class="col">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3" style="height: 75px;">
+                                <div class="row" style="margin: 0px;">
+                                    <div class="col d-xl-flex align-items-xl-center" style="padding: 0px;">
+                                        <h4 class="text-primary font-weight-bold m-0">Your Offer</h4>
+                                    </div>
+                                    <div class="col text-right d-xl-flex justify-content-xl-end align-items-xl-center" style="padding: 0px;"><button id="lockIn" class="btn btn-danger" type="button" style="margin-right: 10px;margin-left: 10px;" onclick="lockIn()">Lock In</button><button onclick="accept()" id="acceptButton" class="btn btn-success" type="button" style="margin-right: 10px;margin-left: 10px;" disabled>Accept</button></div>
+                                </div>
+                            </div>
+                            <div class="card-body" style="min-height: 300px;">
+                                <div class="row" style="margin: 0px;" id="yourOffer">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3" style="height: 75px;">
+                                <div class="row" style="margin: 0px;">
+                                    <div class="col d-xl-flex align-items-xl-center" style="padding: 0px;">
+                                        <h4 class="text-primary font-weight-bold m-0"><span id="tradeName"></span>&#39;s Offer</h4>
+                                    </div>
+                                    <div class="col text-right d-xl-flex justify-content-xl-end align-items-xl-center" style="padding: 0px;"><button id="offerLockedIn" class="btn btn-info" type="button" style="margin-right: 10px;margin-left: 10px;" disabled>Not Locked In</button><button style="display: none;" id="offerAccepted" class="btn btn-success" type="button" style="margin-right: 10px;margin-left: 10px;" disabled>Not Accepted</button></div>
+                                </div>
+                            </div>
+                            <div class="card-body" style="min-height: 300px;">
+                                <div class="row" style="margin: 0px;" id="tradeOffer">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin: 0px;">
+                    <div class="col">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h4 class="text-primary font-weight-bold m-0">Inventory</h4>
+                            </div>
+                            <style>
+                            .joeCard:hover {
+                                background-color: #f2f2f2;
+                            }
+                            .noselect {
+                                -webkit-touch-callout: none;
+                                -webkit-user-select: none;
+                                -khtml-user-select: none;
+                                -moz-user-select: none;
+                                -ms-user-select: none;
+                                user-select: none;
+                            }
+                            </style>
+                            <div class="card-body" style="min-height: 300px;">
+                                <div class="row" style="margin: 0px;" id="yourInventory">
+                                    {% for card in inv %}
+                                        <div class="col d-xl-flex justify-content-xl-center align-items-xl-center" style="max-width: 230px;padding: 0px;" onclick="move(this)">
+                                            <div class="card joeCard noselect" style="width: 200px;margin-top: 10px;margin-bottom: 10px;">
+                                                <div class="card-body">
+                                                    <h4 style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;" class="title">{{ card.title }}</h4>
+                                                    <h5 class="text-muted card-subtitle mb-2 rarity">{{ card.rarity.title }}</h5>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid" id="userWindow">
+                <div class="row" style="margin: 0px;">
+                    <div class="col">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <div class="row" style="margin: 0px;">
+                                    <div class="col d-xl-flex align-items-xl-center" style="padding: 0px;">
+                                        <h4 class="text-primary font-weight-bold m-0">Online Players</h4>
+                                    </div>
+                                    <div class="col d-xl-flex justify-content-xl-end" style="padding: 0px;">
+                                        <form class="d-sm-inline-block ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                                            <div class="input-group"><input id="userSearch" type="text" class="bg-light form-control border-0 small" placeholder="Search" style />
+                                                <div class="input-group-append"><button class="btn btn-primary py-0" type="button" onclick="filterUsers()"><i class="fas fa-search"></i></button></div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+                                function filterUsers() {
+                                    [...document.getElementsByClassName('playerFilter')].filter(e => !e.textContent.toLowerCase().includes(document.getElementById('userSearch').value.toLowerCase())).forEach(e => e.style.display='none');
+                                    [...document.getElementsByClassName('playerFilter')].filter(e => e.textContent.toLowerCase().includes(document.getElementById('userSearch').value.toLowerCase())).forEach(e => e.style.display='');
+                                };
+                                $(document.getElementById('userSearch')).keypress(
+                                function(event){
+                                    if (event.which == '13') {
+                                    event.preventDefault();
+                                    filterUsers();
+                                    }
+                                });
+                                $(document.getElementById('userSearch')).on("keydown input", function(){
+                                    filterUsers();
+                                });
+                            </script>
+                            <div class="card-body" style="min-height: 300px;">
+                                <div class="row" style="margin: 0px;" id="playerList">
+                                    <style>
+                                        .mini-profile-pic {
+                                        height: 100px;
+                                        width: 100px;
+                                        object-fit: cover;
+                                        border-radius: 50%;
+                                        }
+                                    </style>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="bg-white sticky-footer">
+            <div class="container my-auto">
+                <div class="text-center my-auto copyright"><span>Copyright © Jokemon 2020</span></div>
+            </div>
+        </footer>
+    </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
+    <script src="{{ url_for('static', filename='assets/js/script.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/owl.carousel.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/index.min.js') }}"></script>
+</body>
+
+</html>

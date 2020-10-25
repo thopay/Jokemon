@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Lootbox</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/styles.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/owl.carousel.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/owl.theme.default.min.css') }}">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}">
+</head>
+
+<body id="page-top">
+    <script type="text/javascript" href="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="{{ url_for('static', filename='assets/js/jquery.min.js') }}"></script>
+    <div id="wrapper">
+        <div class="d-flex flex-column" id="content-wrapper">
+            <div id="content">
+                <nav class="navbar navbar-dark navbar-expand-md" id="app-navbar" style="margin-bottom: 20px;">
+                    <div class="container-fluid"><a class="navbar-brand" href="{{ url_for('index') }}"><i class="icon ion-ios-infinite" id="brand-logo"></i></a><button data-toggle="collapse" class="navbar-toggler" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+                        <div
+                            class="collapse navbar-collapse" id="navcol-1">
+                            <ul class="nav navbar-nav ml-auto">
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('cards') }}">Cards</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('lootbox') }}">Lootbox</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+                                {% if adminResult %}
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.index') }}">Admin</a></li>
+                                {% endif %}
+                                {% if check %}
+                                <li class="nav-item"><a class="nav-link active" href="{{ url_for('profile') }}">Profile</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                                {% else %}
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+                                {% endif %}
+                            </ul>
+                    </div>
+            </div>
+            </nav>
+        </div>
+        <div class="container-fluid">
+            <h3 class="text-dark mb-4">Profile</h3>
+            <div class="row mb-3">
+                <div class="col-lg-4">
+                    <div class="card mb-3">
+                        <div class="card-body text-center shadow"><img class="rounded-circle mb-3 mt-4" src="{{ user.avatar_url }}" width="160" height="160" />
+                            <hr />
+                            <h3>{{ user }}</h3>
+                        </div>
+                    </div>
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h4 class="text-primary font-weight-bold m-0">Stats</h4>
+                        </div>
+                        <div class="card-body">
+                            <h5>Cards<span class="float-right">{{ user_data.stats.cards }}</span></h5>
+                            <h5>Points<span class="float-right">{{ user_data.stats.points }}</span></h5>
+                            <h5>Wins<span class="float-right">{{ user_data.stats.wins }}</span></h5>
+                            <h5>Losses<span class="float-right">{{ user_data.stats.losses }}</span></h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="row">
+                        <div class="col">
+                            <div class="card shadow mb-3">
+                                <div class="card-header py-3">
+                                    <p class="text-primary m-0 font-weight-bold">Inventory</p>
+                                </div>
+                                <style>
+                                .joeCase {
+                                    object-fit: cover;
+                                    max-height: 256px;
+                                    max-width: 256px;
+                                    height: 256px;
+                                    width: 200px;
+                                    border: 2px solid gray;
+                                }
+                                </style>
+                                <div class="card-body">
+                                    <div class="row d-flex justify-content-center" style="margin: 0px;">
+                                        {% for card in inventory %}
+                                        <div class="col" style="max-width: 300px;padding: 12px;">
+                                            <div class="card">
+                                                <div class="card-body" style="height: 358px;">
+                                                    <h4 style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">{{ card.title }}</h4>
+                                                    <h5 class="text-muted card-subtitle mb-2">{{ card.rarity.title }}</h5>
+                                                    <div class="d-sm-flex d-xl-flex justify-content-sm-center justify-content-xl-center" style="width: 100%;"><img class="joeCase" src="{{ card.image_url }}" /></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="bg-white sticky-footer">
+            <div class="container my-auto">
+                <div class="text-center my-auto copyright"><span>Copyright © Jokemon 2020</span></div>
+            </div>
+        </footer>
+    </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
+    <script src="{{ url_for('static', filename='assets/js/script.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/owl.carousel.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/index.min.js') }}"></script>
+</body>
+
+</html>
