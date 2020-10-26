@@ -1,7 +1,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-
+  <img src="https://media.discordapp.net/attachments/562041975797317643/770125186661744687/favicon_1-1.png" width="256" height="256">
   <h3 align="center">Jokemon</h3>
 
   <p align="center">
@@ -33,6 +33,9 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 An online trading card game based around pictures of my friend.
+
+<img src="https://media.discordapp.net/attachments/562041975797317643/770125468924903444/unknown.png?width=960&height=496">
+<img src="https://media.discordapp.net/attachments/562041975797317643/770125553335795712/unknown.png?width=851&height=676">
 
 ### Built With
 * [Python](https://www.python.org)
