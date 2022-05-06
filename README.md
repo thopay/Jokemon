@@ -7,12 +7,12 @@
   <p align="center">
     A birthday gift for a close friend
     <br />
-    <a href="https://github.com/th-ms/Jokemon/"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/thopay/Jokemon/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/th-ms/Jokemon/">Report Bug</a>
+    <a href="https://github.com/thopay/Jokemon/">Report Bug</a>
     ·
-    <a href="https://github.com/th-ms/Jokemon/">Request Feature</a>
+    <a href="https://github.com/thopay/Jokemon/">Request Feature</a>
   </p>
 </p>
 
@@ -44,7 +44,7 @@ An online trading card game based around pictures of my friend.
 <!-- ROADMAP -->
 ## Roadmap
 
-See the [open issues](https://github.com/th-ms/Jokemon/issues) for a list of proposed features (and known issues).
+See the [open issues](https://github.com/thopay/Jokemon/issues) for a list of proposed features (and known issues).
 
 
 
@@ -73,4 +73,4 @@ Distributed under the MIT License.
 
 Thomas - [@th___mas](https://twitter.com/th___mas) - contact@th-mas.dev
 
-Project Link: [https://github.com/th-ms/Jokemon](https://github.com/th-ms/Jokemon)
+Project Link: [https://github.com/thopay/Jokemon](https://github.com/thopay/Jokemon)
